@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>AEM Error Log Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div id="container">
+        <!-- Header with logo and title -->
+        <div id="header">
+            <img id="logo" src="logo.png" alt="AEM Logo">
+            <h2>AEM log Viewer</h2>
+        </div>
+
+        <div id="buttons">
+            <button id="refresh">Refresh Logs</button>
+            <button id="author">Author Logs</button>
+            <button id="publish">Publish Logs</button>
+            <button id="compare">Compare Logs</button>
+        </div>
+
+        <div id="filters">
+            <label><input type="checkbox" id="filter-error" checked /> ERROR</label>
+            <label><input type="checkbox" id="filter-warn" checked /> WARN</label>
+            <label><input type="checkbox" id="filter-info" checked /> INFO</label>
+        </div>
+
+        <div id="search-container">
+            <input id="search" type="text" placeholder="Search..." />
+        </div>
+
+        <div id="log-container">
+            <div class="log-section">
+                <h3>Author Logs</h3>
+                <div id="author-log" class="log"></div>
+            </div>
+            <div class="log-section">
+                <h3>Publish Logs</h3>
+                <div id="publish-log" class="log"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

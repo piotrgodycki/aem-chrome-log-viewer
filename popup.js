@@ -32,6 +32,9 @@ const ENDPOINTS = {
     "http://localhost:4503/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=%2Flogs%2Ferror.log",
 };
 
+const closeBtn = document.getElementById("close-btn");
+closeBtn.addEventListener("click", () => window.close());
+
 // Debounce utility
 function debounce(func, delay) {
   let timer;

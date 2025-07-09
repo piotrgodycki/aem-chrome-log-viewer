@@ -18,6 +18,16 @@ h2 {
   margin-bottom: 12px;
 }
 
+#close-btn {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  margin: 5px 5px;
+  background-color: #121212;
+  color: #fff;
+  font-size: 20px;
+}
+
 #logo {
   width: 32px;
   height: 32px;

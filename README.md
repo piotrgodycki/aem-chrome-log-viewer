@@ -1,169 +1,128 @@
 # AEM Error Log Viewer 🔍
 
-![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-v1.0-brightgreen?style=for-the-badge&logo=googlechrome&logoColor=white)
-![Manifest Version](https://img.shields.io/badge/Manifest%20V3-Compatible-blue?style=for-the-badge&logo=chrome&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
-![Made with](https://img.shields.io/badge/Made%20with-JavaScript-f7df1e?style=for-the-badge&logo=javascript&logoColor=black)
-![AEM Compatible](https://img.shields.io/badge/AEM-Compatible-ff6b35?style=for-the-badge&logo=adobe&logoColor=white)
+![Manifest V3](https://img.shields.io/badge/Manifest%20V3-Compatible-blue?style=flat-square&logo=googlechrome&logoColor=white)
+![Built with WXT](https://img.shields.io/badge/Built%20with-WXT-67d75e?style=flat-square)
+![Svelte 5](https://img.shields.io/badge/Svelte-5-ff3e00?style=flat-square&logo=svelte&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
-[![GitHub issues](https://img.shields.io/github/issues/piotrgodycki/aem-logger?style=flat-square)](https://github.com/piotrgodycki/aem-logger/issues)
-[![GitHub forks](https://img.shields.io/github/forks/piotrgodycki/aem-logger?style=flat-square)](https://github.com/piotrgodycki/aem-logger/network)
-[![GitHub stars](https://img.shields.io/github/stars/piotrgodycki/aem-logger?style=flat-square)](https://github.com/piotrgodycki/aem-logger/stargazers)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-
-> 🚀 **A powerful Chrome extension for viewing and comparing AEM Author and Publish error logs directly in your browser**
-
-## ✨ Features
-
-- 🔄 **Real-time Log Monitoring** - Auto-refresh logs every 5 seconds
-- 📊 **Dual View Support** - View Author and Publish logs side by side
-- 🔍 **Advanced Search** - Search through logs with instant filtering
-- 🎯 **Log Level Filtering** - Filter by ERROR, WARN, and INFO levels
-- ⚡ **Compare Mode** - Compare Author vs Publish logs easily
-- 🎨 **Clean UI** - Modern, responsive design for better readability
-- 🔒 **Secure** - Works with localhost AEM instances only
-
-## 🎯 Target Audience
-
-Perfect for:
-- **AEM Developers** debugging applications
-- **QA Teams** investigating issues
-
-## 🛠️ Installation
-
-### From Chrome Web Store (Recommended)
-1. Visit the [Chrome Web Store](https://chrome.google.com/webstore)
-2. Search for "AEM Error Log Viewer"
-3. Click "Add to Chrome"
-
-### Manual Installation
-1. Download or clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top right
-4. Click "Load unpacked" and select the extension folder
-5. The extension will appear in your Chrome toolbar
-
-## 🚀 Usage
-
-### Prerequisites
-- AEM Author instance running on `http://localhost:4502`
-- AEM Publish instance running on `http://localhost:4503`
-- Proper AEM permissions to access log files
-
-### Getting Started
-
-1. **Launch the Extension**
-   - Click the AEM Logger icon in your Chrome toolbar
-   - The popup will open with the log viewer interface
-
-2. **View Logs**
-   - Click **"Author Logs"** to view Author instance logs
-   - Click **"Publish Logs"** to view Publish instance logs
-   - Click **"Compare Logs"** to view both side by side
-
-3. **Filter and Search**
-   - Use checkboxes to filter by log levels (ERROR, WARN, INFO)
-   - Use the search box to find specific log entries
-   - Click **"Refresh Logs"** to manually update
-
-4. **Auto-Refresh**
-   - Logs automatically refresh every 5 seconds
-   - Real-time monitoring of your AEM instances
-
-## 🔧 Configuration
-
-The extension is configured to work with standard AEM local development setup:
-
-- **Author Instance**: `http://localhost:4502`
-- **Publish Instance**: `http://localhost:4503`
-
-### Log Endpoints
-- Author: `/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=%2Flogs%2Ferror.log`
-- Publish: `/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=%2Flogs%2Ferror.log`
-
-## 📁 Project Structure
-
-```
-AEM Logger/
-├── manifest.json       # Extension manifest (V3)
-├── popup.html         # Main popup interface
-├── popup.js           # Popup functionality
-├── background.js      # Background service worker
-├── content.js         # Content script
-├── styles.css         # UI styling
-├── logo.png          # Extension icon
-└── README.md         # This file
-```
-
-## 🔒 Permissions
-
-The extension requires the following permissions:
-- **storage** - To save user preferences and settings
-- **activeTab** - To interact with AEM console pages
-- **host_permissions** - Access to localhost:4502 and localhost:4503
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/piotrgodycki/aem-chrome-log-viewer.git
-cd aem-chrome-log-viewer
-
-# Load the extension in Chrome
-# 1. Open chrome://extensions/
-# 2. Enable Developer mode
-# 3. Click "Load unpacked" and select this folder
-```
-
-## 📝 Changelog
-
-### v1.0.0
-- Initial release
-- Author and Publish log viewing
-- Real-time auto-refresh
-- Search and filtering capabilities
-- Compare mode
-
-## 🐛 Known Issues
-
-- Works only with localhost AEM instances
-- Requires proper AEM console access permissions
-- Large log files may impact performance
-
-## 🆘 Support
-
-If you encounter any issues:
-
-1. Check the [Issues](https://github.com/username/aem-logger/issues) page
-2. Create a new issue with detailed description
-3. Include Chrome version and AEM version information
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Adobe Experience Manager team for the platform
-- Chrome Extensions API documentation
-- Open source community for inspiration
+> A Chrome/Firefox extension for viewing, comparing and **AI-analyzing** AEM Author & Publish `error.log` — right in the browser. All analysis can run **100% locally**.
 
 ---
 
-<div align="center">
-  <strong>Made with ❤️ for the AEM Developer Community</strong>
-</div>
+## ✨ Features
 
-<div align="center">
-  <sub>Give it a ⭐ if you like this project!</sub>
-</div>
+- **Author / Publish tabs + Split view** — focus one instance or see both side by side.
+- **Live tail** — auto-refresh every 5s, with pause/resume and a live indicator.
+- **Search + highlight**, **level filters** (ERROR / WARN / INFO) and per-pane line counts.
+- **Copy / Export / Clear** the visible logs.
+- **LLM analysis** of the logs with a choice of engine:
+  - **Ollama (local)** — fully on-device, configurable server URL & model.
+  - **Gemini Nano (built-in)** — Chrome's on-device Prompt API.
+  - **Claude (your account)** — Anthropic API with your own key (stored locally).
+- **AEM-expert prompt** — triage tuned for OSGi, Sling, JCR/Oak, replication, dispatcher, queries, threads.
+- **Floating widget** — a logo button in the bottom-right of AEM pages toggles a resizable viewer panel.
+- **Resizable pop-out window** — break out of the fixed popup into a window you can drag-resize.
+- **Environment labels** — tag URLs as PROD / STAGE / DEV with a loud colored badge (local-only safety net for tunnelled instances).
+
+## 🔒 Security & privacy
+
+- **Redaction** — paths (JCR/Windows/unix), URLs, e-mails, IPs and UUIDs are masked before logs are sent to any engine. On by default; **forced on for Gemini** (Google model).
+- **External-send consent** — sending to Claude (cloud) requires an explicit one-time confirmation.
+- **Prompt-injection hardening** — logs are treated as untrusted data: fenced with sanitized delimiters and the model is instructed to never obey instructions found inside log lines (and to flag suspected log-injection).
+- **Local-only state** — engine, model, Anthropic key and environments live in `chrome.storage.local`; nothing is synced. The key can be cleared with one click.
+- **No background routing** — logs are fetched directly from the extension via `host_permissions`; no AEM tab needs to be open.
+
+## 🧰 Tech stack
+
+[WXT](https://wxt.dev) (Vite) · [Svelte 5](https://svelte.dev) (runes) · TypeScript (strict). Builds for Chrome and Firefox from one codebase.
+
+## 🚀 Getting started (development)
+
+```bash
+npm install          # installs deps + runs `wxt prepare`
+npm run dev          # launch Chrome with HMR
+npm run dev:firefox  # launch Firefox with HMR
+```
+
+`npm run dev` opens a browser with the extension loaded and hot-reloads on save.
+
+### Build & load manually
+
+```bash
+npm run build            # -> .output/chrome-mv3
+npm run build:firefox    # -> .output/firefox-mv2
+npm run zip              # packaged zips in .output/
+```
+
+Then in Chrome: `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select `.output/chrome-mv3`.
+
+### Quality checks
+
+```bash
+npm run check    # svelte-check (type-check .svelte + .ts)
+```
+
+CI (GitHub Actions) runs `check`, builds Chrome + Firefox and packages zips on every push/PR to `main`.
+
+## 🧪 Usage
+
+**Prerequisites:** AEM Author on `http://localhost:4502`, Publish on `http://localhost:4503`, and you must be logged in (cookies are sent with the request).
+
+1. Click the toolbar icon, or use the floating logo on an AEM page.
+2. Switch **Author / Publish**, or toggle **Split**.
+3. Filter by level, search, and watch it live-tail.
+4. For AI triage: pick an **Engine**, (optionally) a model / enter your key, then **Analyze with LLM**.
+
+### LLM engine setup
+
+| Engine | Setup | Data leaves machine? |
+| --- | --- | --- |
+| **Ollama** | `OLLAMA_ORIGINS=* ollama serve` + `ollama pull llama3.1` | No |
+| **Gemini Nano** | Chrome 138+ with the Prompt API available | No (on-device) |
+| **Claude** | Paste your `sk-ant-...` key (select "Claude" engine) | Yes → `api.anthropic.com` |
+
+The Ollama server URL (default `http://localhost:11434`) is editable in the UI.
+
+## ⚙️ Log endpoints
+
+```
+/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=%2Flogs%2Ferror.log
+```
+fetched from `:4502` (Author) and `:4503` (Publish).
+
+## 📁 Project structure
+
+```
+.
+├── wxt.config.ts            # WXT config → generates manifest.json
+├── entrypoints/
+│   ├── popup/
+│   │   ├── index.html
+│   │   ├── main.ts          # mounts Svelte app
+│   │   └── App.svelte       # whole UI + state
+│   └── widget.content.ts    # floating widget content script
+├── lib/
+│   ├── aem.ts               # endpoints, fetch, level detection
+│   ├── llm.ts               # engines + hardened prompt builder
+│   ├── redact.ts            # sensitive-data masking
+│   └── types.ts
+├── public/logo.png          # icon (optimized)
+└── .github/workflows/ci.yml
+```
+
+## 🔑 Permissions
+
+- `storage` — save preferences (engine, model, key, environments).
+- `host_permissions` — `http://localhost/*`, `http://127.0.0.1/*` (fetch logs / Ollama), `https://api.anthropic.com/*` (Claude).
+- Content script on `localhost:4502` / `:4503` — the floating widget.
+
+## 🐛 Known limitations
+
+- Reads instances reachable from your machine only.
+- Gemini Nano requires a recent Chrome with the Prompt API enabled.
+- EDS / Edge Delivery has no `slinglog` endpoint — environments there are badge-only.
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE).

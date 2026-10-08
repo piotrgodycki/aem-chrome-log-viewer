@@ -1,10 +1,12 @@
 # AEM Error Log Viewer 🔍
 
+[![CI](https://github.com/piotrgodycki/aem-chrome-log-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/piotrgodycki/aem-chrome-log-viewer/actions/workflows/ci.yml)
 ![Manifest V3](https://img.shields.io/badge/Manifest%20V3-Compatible-blue?style=flat-square&logo=googlechrome&logoColor=white)
 ![Built with WXT](https://img.shields.io/badge/Built%20with-WXT-67d75e?style=flat-square)
 ![Svelte 5](https://img.shields.io/badge/Svelte-5-ff3e00?style=flat-square&logo=svelte&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+[![Security policy](https://img.shields.io/badge/security-policy-8a2be2?style=flat-square)](SECURITY.md)
 
 > A Chrome/Firefox extension for viewing, comparing and **AI-analyzing** AEM Author & Publish `error.log` — right in the browser. All analysis can run **100% locally**.
 

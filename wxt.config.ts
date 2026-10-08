@@ -23,10 +23,16 @@ export default defineConfig({
       default_title: "AEM Log Viewer",
     },
     // The floating widget loads the popup page inside an iframe on AEM pages.
+    // Scope the exposed page to the AEM ports only (not every localhost origin).
     web_accessible_resources: [
       {
         resources: ["popup.html", "logo.png"],
-        matches: ["http://localhost/*", "http://127.0.0.1/*"],
+        matches: [
+          "http://localhost:4502/*",
+          "http://localhost:4503/*",
+          "http://127.0.0.1:4502/*",
+          "http://127.0.0.1:4503/*",
+        ],
       },
     ],
   },

@@ -32,7 +32,7 @@ export default defineContentScript({
       <style>
         :host { all: initial; }
         .env-badge {
-          position: fixed; top: 10px; left: 14px; z-index: 2147483647; display: none;
+          position: fixed; top: 12px; left: 250px; z-index: 2147483647; display: none;
           align-items: center; gap: 7px; padding: 6px 12px; border-radius: 999px;
           font: 800 11px/1 "adobe-clean", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           letter-spacing: .5px; box-shadow: 0 2px 12px rgba(0,0,0,.35);
@@ -101,8 +101,13 @@ export default defineContentScript({
         "environments",
         "activeEnv",
       ])) as Record<string, any>;
-      const features: Features = { ...DEFAULT_FEATURES, ...(cfg.features ?? {}) };
-      const envs: AemEnv[] = Array.isArray(cfg.environments) ? cfg.environments : [];
+      const features: Features = {
+        ...DEFAULT_FEATURES,
+        ...(cfg.features ?? {}),
+      };
+      const envs: AemEnv[] = Array.isArray(cfg.environments)
+        ? cfg.environments
+        : [];
       const active: string = cfg.activeEnv ?? "";
 
       fab.style.display = features.widget ? "block" : "none";
@@ -126,7 +131,10 @@ export default defineContentScript({
 
     void sync();
     browser.storage.onChanged.addListener((changes, area) => {
-      if (area === "local" && (changes.features || changes.environments || changes.activeEnv)) {
+      if (
+        area === "local" &&
+        (changes.features || changes.environments || changes.activeEnv)
+      ) {
         void sync();
       }
     });

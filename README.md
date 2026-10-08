@@ -120,9 +120,11 @@ fetched from `:4502` (Author) and `:4503` (Publish).
 
 - `storage` — save preferences (engine, model, key, environments, feature flags).
 - `host_permissions` — `http://localhost/*`, `http://127.0.0.1/*` (fetch logs / Ollama), `https://api.anthropic.com/*` (Claude).
-- Content scripts:
-  - Widget + on-page env badge — `localhost:4502` / `:4503` only.
-  - Data Layer capture — all `http(s)` pages (so you can inspect ACDL/GTM on any site); captures locally and writes to extension storage only.
+- Content scripts (all run read-only, data stays in local extension storage):
+  - Widget + on-page env badge — injected on all `http(s)` pages but shown only when the page is detected as AEM (hostname, `generator` meta, clientlibs, Granite UI).
+  - Data Layer capture — all `http(s)` pages (inspect ACDL/GTM anywhere).
+
+  Note: log fetching still targets `localhost:4502/4503`, so on a remote AEM host the widget gives you the env badge + Data Layer, but the log panes won't load.
 
 ## 🐛 Known limitations
 

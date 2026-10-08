@@ -8,15 +8,33 @@ const ENV_COLORS: Record<string, { bg: string; fg: string }> = {
   other: { bg: "#1f4e86", fg: "#d6e7fb" },
 };
 
-// On AEM pages: a floating logo button (toggles the viewer in an iframe) and a
-// floating environment badge in the top-left corner next to "Adobe Experience
-// Manager" — so you never confuse which instance you're on.
+// Heuristic: does this page look like Adobe Experience Manager?
+function isAemPage(): boolean {
+  const h = location.hostname;
+  if (h === "localhost" || h === "127.0.0.1") return true; // local dev instances
+  if (/\.adobeaemcloud\.com$/i.test(h)) return true; // AEMaaCS author/publish
+  if (/(^|\.)(author|publish)[.-]/i.test(h)) return true; // author-/publish- hosts
+  if (document.querySelector('meta[name="generator"][content*="Adobe Experience Manager" i]')) return true;
+  if (
+    document.querySelector(
+      'link[href*="/etc.clientlibs/"], script[src*="/etc.clientlibs/"], link[href*="/libs/granite/"], script[src*="/libs/granite/"]',
+    )
+  )
+    return true;
+  if (document.querySelector('coral-shell, .foundation-layout-panel, [class*="cq-Editable"]')) return true;
+  return false;
+}
+
+// On AEM pages (any host): a floating logo button (toggles the viewer in an
+// iframe) and a floating environment badge in the top-left corner next to
+// "Adobe Experience Manager" — so you never confuse which instance you're on.
 export default defineContentScript({
-  matches: ["http://localhost:4502/*", "http://localhost:4503/*"],
+  matches: ["http://*/*", "https://*/*"],
   runAt: "document_idle",
   main() {
     const w = window as unknown as { __aemLogViewerWidget?: boolean };
     if (w.__aemLogViewerWidget) return;
+    if (!isAemPage()) return; // keep the widget off non-AEM sites
     w.__aemLogViewerWidget = true;
 
     const host = document.createElement("div");

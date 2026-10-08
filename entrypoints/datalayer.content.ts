@@ -19,13 +19,21 @@ export default defineContentScript({
   main() {
     let enabled = true;
     const check = async () => {
-      const cfg = (await browser.storage.local.get("features")) as { features?: Partial<Features> };
-      enabled = { ...DEFAULT_FEATURES, ...(cfg.features ?? {}) }.dataLayer;
+      try {
+        const cfg = (await browser.storage.local.get("features")) as { features?: Partial<Features> };
+        enabled = { ...DEFAULT_FEATURES, ...(cfg.features ?? {}) }.dataLayer;
+      } catch {
+        /* extension context gone */
+      }
     };
     void check();
-    browser.storage.onChanged.addListener((changes, area) => {
-      if (area === "local" && changes.features) void check();
-    });
+    try {
+      browser.storage.onChanged.addListener((changes, area) => {
+        if (area === "local" && changes.features) void check();
+      });
+    } catch {
+      /* extension context gone */
+    }
 
     const events: DLEvent[] = [];
     let acdlState: unknown = null;
@@ -34,16 +42,42 @@ export default defineContentScript({
     let seq = 0;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
+    const build = (n: number, withState: boolean): DLSnapshot => ({
+      events: events.slice(-n),
+      acdlState: withState ? acdlState : null,
+      gtmState: withState ? gtmState : null,
+      href,
+      updated: Date.now(),
+    });
+
+    const save = (snap: DLSnapshot) => {
+      try {
+        // storage.local.set returns a Promise in MV3; swallow quota/context errors.
+        void Promise.resolve(browser.storage.local.set({ [DL_STORAGE_KEY]: snap })).catch(() => {
+          try {
+            void Promise.resolve(
+              browser.storage.local.set({ [DL_STORAGE_KEY]: build(30, false) }),
+            ).catch(() => {});
+          } catch {
+            /* extension context gone */
+          }
+        });
+      } catch {
+        /* extension context gone */
+      }
+    };
+
     const flush = () => {
       timer = null;
-      const snap: DLSnapshot = {
-        events: events.slice(-200),
-        acdlState,
-        gtmState,
-        href,
-        updated: Date.now(),
-      };
-      browser.storage.local.set({ [DL_STORAGE_KEY]: snap });
+      // Keep the stored snapshot well under the storage quota: drop the big
+      // state blobs (and trim events) if the payload gets too large.
+      let snap = build(200, true);
+      try {
+        if (JSON.stringify(snap).length > 1_500_000) snap = build(100, false);
+      } catch {
+        snap = build(50, false);
+      }
+      save(snap);
     };
     const schedule = () => {
       if (!timer) timer = setTimeout(flush, 200);

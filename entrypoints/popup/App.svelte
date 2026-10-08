@@ -324,34 +324,20 @@
   });
 </script>
 
-{#snippet badge(type: EnvType, label: string, title: string, pulse: boolean)}
-  <span
-    class="badge"
-    class:prod={type === "prod"}
-    class:stage={type === "stage"}
-    class:dev={type === "dev"}
-    class:local={type === "local"}
-    class:other={type === "other"}
-    class:pulse={pulse && type === "prod"}
-    {title}>{label}</span
-  >
-{/snippet}
-
 <main class="app" class:fluid={isFluid}>
+  {#if activeEnvObj}
+    <div class="env-strip {activeEnvObj.type}" title={activeEnvObj.url}>
+      <span class="strip-dot"></span>
+      <span class="strip-label">{activeEnvObj.type.toUpperCase()} · {activeEnvObj.name}</span>
+      {#if activeEnvObj.url}<span class="strip-url">{activeEnvObj.url}</span>{/if}
+    </div>
+  {/if}
   <header class="header">
     <img class="logo" src="/logo.png" alt="AEM Logo" />
     <div class="title-group">
       <h1>AEM Log Viewer</h1>
       <span class="subtitle">Author &amp; Publish error logs</span>
     </div>
-    {#if activeEnvObj}
-      {@render badge(
-        activeEnvObj.type,
-        activeEnvObj.type.toUpperCase() + " · " + activeEnvObj.name,
-        activeEnvObj.url,
-        true,
-      )}
-    {/if}
     <div class="live" class:paused>
       <span class="dot"></span>
       <span>{paused ? "Paused" : "Live"}</span>
@@ -379,7 +365,10 @@
   {#if settingsOpen}
     <button class="settings-overlay" aria-label="Close settings" onclick={() => (settingsOpen = false)}></button>
     <div class="settings-panel">
-      <div class="settings-head">Environments <span class="settings-sub">— local-only labels</span></div>
+      <div class="settings-head">
+        <span>Environments <span class="settings-sub">— local-only labels</span></span>
+        <button class="icon-plain" aria-label="Close settings" onclick={() => (settingsOpen = false)}>&times;</button>
+      </div>
       <div class="env-opts">
         <div class="env-opt" class:active={activeEnv === ""} role="button" tabindex="0"
           onclick={() => selectEnv("")} onkeydown={(e) => onEnvKey(e, "")}>
@@ -618,20 +607,27 @@
   .icon-plain:hover { color: #fff; background: var(--bg-raised); }
   .icon-plain.close { font-size: 22px; line-height: 1; padding: 2px 6px; }
 
-  .badge {
-    display: inline-flex; align-items: center; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
-    padding: 3px 9px; border-radius: 999px; border: 1px solid transparent; white-space: nowrap;
+  /* Full-width environment strip — impossible to miss which instance you're on. */
+  .env-strip {
+    display: flex; align-items: center; gap: 9px;
+    margin: -14px -16px 12px; padding: 7px 16px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.6px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.35);
   }
-  .badge.prod { background: rgba(227,72,80,.18); color: #ff8085; border-color: var(--red); }
-  .badge.stage { background: rgba(232,163,61,.18); color: #f0c37a; border-color: #b9792a; }
-  .badge.dev { background: rgba(63,207,110,.15); color: #6ee29a; border-color: #2e8b57; }
-  .badge.local { background: var(--bg-sunken); color: var(--text-dim); border-color: var(--border-strong); }
-  .badge.other { background: rgba(55,142,240,.15); color: #9cc4f5; border-color: var(--accent); }
-  .badge.pulse { animation: prodPulse 1.6s infinite; }
+  .strip-dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .strip-label { white-space: nowrap; }
+  .strip-url { margin-left: auto; font-weight: 500; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; }
+
+  .env-strip.prod { background: var(--red); color: #fff; animation: prodPulse 1.6s infinite; }
+  .env-strip.stage { background: #d4a916; color: #221a00; }
+  .env-strip.dev { background: #1f7a4d; color: #eafff3; }
+  .env-strip.local { background: #1f7a4d; color: #eafff3; }
+  .env-strip.other { background: #1f4e86; color: #d6e7fb; }
   @keyframes prodPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(227,72,80,.5); }
-    50% { box-shadow: 0 0 0 5px rgba(227,72,80,0); }
+    0%, 100% { box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0); }
+    50% { box-shadow: inset 0 -3px 0 0 rgba(255, 255, 255, 0.35); }
   }
+  .app.fluid .env-strip { margin-top: -14px; }
 
   .tab-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   .segmented { display: inline-flex; background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--radius); padding: 3px; }
@@ -643,9 +639,9 @@
 
   .env-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: var(--text-faint); }
   .env-dot.prod { background: var(--red); box-shadow: 0 0 0 3px rgba(227,72,80,.25); }
-  .env-dot.stage { background: var(--warn); }
+  .env-dot.stage { background: #e6c619; }
   .env-dot.dev { background: #3fcf6e; }
-  .env-dot.local { background: var(--text-faint); }
+  .env-dot.local { background: #3fcf6e; }
   .env-dot.other { background: var(--accent); }
 
   .settings-overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.35); border: none; padding: 0; cursor: default; }
@@ -654,7 +650,8 @@
     background: var(--bg-raised); border: 1px solid var(--border-strong); border-radius: 10px;
     box-shadow: 0 16px 48px rgba(0,0,0,.5); padding: 10px;
   }
-  .settings-head { font-size: 11px; font-weight: 800; letter-spacing: .4px; color: var(--text); padding: 2px 4px 10px; }
+  .settings-head { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 800; letter-spacing: .4px; color: var(--text); padding: 2px 4px 10px; }
+  .settings-head .icon-plain { font-size: 18px; line-height: 1; padding: 0 4px; }
   .settings-sub { font-weight: 500; color: var(--text-faint); }
   .env-opts { display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow-y: auto; }
   .env-opt { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: var(--radius); cursor: pointer; border: 1px solid transparent; }

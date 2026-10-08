@@ -5,7 +5,7 @@
   let snap = $state<DLSnapshot | null>(null);
   let source = $state<"all" | "acdl" | "gtm">("all");
   let query = $state("");
-  let metaOpen = $state(true);
+  let metaOpen = $state(false);
   let order = $state<"desc" | "asc">("desc");
 
   // Events are stored in capture order (oldest → newest); #id is the absolute

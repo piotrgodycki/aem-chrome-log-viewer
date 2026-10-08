@@ -32,7 +32,7 @@
   // ----- Environments -----
   let environments = $state<AemEnv[]>([]);
   let activeEnv = $state("");
-  let envManagerOpen = $state(false);
+  let envPickerOpen = $state(false);
   let newEnvName = $state("");
   let newEnvType = $state<EnvType>("local");
   let newEnvUrl = $state("");
@@ -204,6 +204,19 @@
     environments = environments.filter((_, idx) => idx !== i);
     if (removed && removed.name === activeEnv) activeEnv = "";
   }
+  function selectEnv(name: string) {
+    activeEnv = name;
+    envPickerOpen = false;
+  }
+  function onEnvKey(e: KeyboardEvent, name: string) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      selectEnv(name);
+    }
+  }
+  function onAddKey(e: KeyboardEvent) {
+    if (e.key === "Enter") addEnv();
+  }
 
   // ----- LLM -----
   function onProviderChange() {
@@ -362,52 +375,52 @@
       <button class="seg" class:active={!splitView && currentTab === "publish"} role="tab" onclick={() => selectTab("publish")}>Publish</button>
     </div>
     <button class="icon-btn" class:on={splitView} title="Show Author & Publish side by side" onclick={toggleSplit}>⿻ Split</button>
-    <div class="env-controls">
-      <label class="env-select-label">Env
-        <select bind:value={activeEnv}>
-          <option value="">Local (unlabeled)</option>
-          {#each environments as env (env.name)}
-            <option value={env.name}>{env.name}</option>
-          {/each}
-        </select>
-      </label>
-      <button class="icon-btn" title="Manage environments" onclick={() => (envManagerOpen = !envManagerOpen)}>⚙</button>
+    <div class="env-picker-wrap">
+      <button class="env-picker" class:open={envPickerOpen} title="Select / manage environment"
+        onclick={() => (envPickerOpen = !envPickerOpen)}>
+        <span class="env-dot {activeEnvObj ? activeEnvObj.type : 'local'}"></span>
+        <span class="env-picker-name">{activeEnvObj ? activeEnvObj.name : "Local"}</span>
+        <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+      </button>
+      {#if envPickerOpen}
+        <button class="env-overlay" aria-label="Close environment menu" onclick={() => (envPickerOpen = false)}></button>
+        <div class="env-popover">
+          <div class="env-pop-head">Environment</div>
+          <div class="env-opts">
+            <div class="env-opt" class:active={activeEnv === ""} role="button" tabindex="0"
+              onclick={() => selectEnv("")} onkeydown={(e) => onEnvKey(e, "")}>
+              <span class="env-dot local"></span>
+              <span class="env-opt-name">Local (unlabeled)</span>
+              {#if activeEnv === ""}<span class="env-check">✓</span>{/if}
+            </div>
+            {#each environments as env, i (env.name)}
+              <div class="env-opt" class:active={activeEnv === env.name} role="button" tabindex="0"
+                onclick={() => selectEnv(env.name)} onkeydown={(e) => onEnvKey(e, env.name)}>
+                <span class="env-dot {env.type}"></span>
+                <span class="env-opt-name">{env.name}</span>
+                <span class="env-opt-url">{env.url}</span>
+                <button class="env-del" title="Delete" onclick={(e) => { e.stopPropagation(); delEnv(i); }}>✕</button>
+              </div>
+            {/each}
+          </div>
+          <div class="env-add">
+            <input placeholder="Name (e.g. Prod EU)" bind:value={newEnvName} onkeydown={onAddKey} />
+            <select bind:value={newEnvType}>
+              <option value="prod">Prod</option>
+              <option value="stage">Stage</option>
+              <option value="dev">Dev</option>
+              <option value="local">Local</option>
+              <option value="other">Other</option>
+            </select>
+            <input class="env-url" placeholder="https://author-prod.example.com" bind:value={newEnvUrl} onkeydown={onAddKey} />
+            <button class="icon-btn primary" onclick={addEnv}>Add</button>
+          </div>
+          <div class="env-hint">Stored locally only — nothing leaves this machine.</div>
+        </div>
+      {/if}
     </div>
   </div>
-
-  {#if envManagerOpen}
-    <div class="env-manager">
-      <div class="env-hint">
-        Label URLs so you always know what you're looking at. Stored locally only — nothing leaves this machine.
-        Handy when localhost is tunnelled to a remote instance.
-      </div>
-      <div class="env-list">
-        {#if !environments.length}
-          <div class="env-empty">No environments yet.</div>
-        {/if}
-        {#each environments as env, i (env.name)}
-          <div class="env-item">
-            {@render badge(env.type, env.type.toUpperCase(), "", false)}
-            <span class="env-item-name">{env.name}</span>
-            <span class="env-item-url">{env.url}</span>
-            <button class="env-del" title="Delete" onclick={() => delEnv(i)}>✕</button>
-          </div>
-        {/each}
-      </div>
-      <div class="env-add">
-        <input placeholder="Name (e.g. Prod EU)" bind:value={newEnvName} />
-        <select bind:value={newEnvType}>
-          <option value="prod">Prod</option>
-          <option value="stage">Stage</option>
-          <option value="dev">Dev</option>
-          <option value="local">Local</option>
-          <option value="other">Other</option>
-        </select>
-        <input class="env-url" placeholder="URL (e.g. https://author-prod.example.com)" bind:value={newEnvUrl} />
-        <button class="icon-btn" onclick={addEnv}>Add</button>
-      </div>
-    </div>
-  {/if}
 
   <div class="toolbar">
     <div class="search">
@@ -617,8 +630,47 @@
   .seg:hover { color: var(--text); }
   .seg.active { background: var(--red); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
 
-  .env-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; }
-  .env-select-label { font-size: 11px; color: var(--text-dim); display: flex; align-items: center; gap: 5px; }
+  .env-picker-wrap { margin-left: auto; position: relative; }
+  .env-picker {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--bg-raised); border: 1px solid var(--border-strong); color: var(--text);
+    font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: var(--radius); cursor: pointer;
+    transition: background .12s, border-color .12s, box-shadow .12s;
+  }
+  .env-picker:hover { background: #2f2f2f; border-color: #4a4a4a; }
+  .env-picker.open { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(55,142,240,.25); }
+  .env-picker .chev { color: var(--text-faint); transition: transform .12s; }
+  .env-picker.open .chev { transform: rotate(180deg); }
+  .env-picker-name { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .env-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: var(--text-faint); }
+  .env-dot.prod { background: var(--red); box-shadow: 0 0 0 3px rgba(227,72,80,.25); }
+  .env-dot.stage { background: var(--warn); }
+  .env-dot.dev { background: #3fcf6e; }
+  .env-dot.local { background: var(--text-faint); }
+  .env-dot.other { background: var(--accent); }
+
+  .env-overlay { position: fixed; inset: 0; z-index: 40; background: transparent; border: none; padding: 0; cursor: default; }
+  .env-popover {
+    position: absolute; top: calc(100% + 6px); right: 0; z-index: 41; width: 340px;
+    background: var(--bg-raised); border: 1px solid var(--border-strong); border-radius: 10px;
+    box-shadow: 0 16px 48px rgba(0,0,0,.5); padding: 8px;
+  }
+  .env-pop-head { font-size: 10px; font-weight: 800; letter-spacing: .6px; color: var(--text-faint); text-transform: uppercase; padding: 4px 6px 8px; }
+  .env-opts { display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow-y: auto; }
+  .env-opt { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: var(--radius); cursor: pointer; border: 1px solid transparent; }
+  .env-opt:hover { background: var(--bg-sunken); }
+  .env-opt.active { background: var(--bg-sunken); border-color: var(--border); }
+  .env-opt-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .env-opt-url { font-size: 11px; color: var(--text-faint); margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
+  .env-check { color: var(--accent); font-weight: 800; margin-left: auto; }
+  .env-del { background: transparent; border: none; color: var(--text-faint); cursor: pointer; font-size: 11px; padding: 2px 5px; border-radius: 4px; flex-shrink: 0; }
+  .env-del:hover { color: var(--error); background: var(--bg-raised); }
+  .env-add { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 2px 2px; border-top: 1px solid var(--border); margin-top: 8px; }
+  .env-add input { flex: 1 1 100%; }
+  .env-add select { flex: 1 1 90px; }
+  .env-add .icon-btn { flex: 0 0 auto; }
+  .env-hint { font-size: 10.5px; color: var(--text-faint); padding: 8px 2px 0; line-height: 1.4; }
 
   .icon-btn { background: var(--bg-raised); border: 1px solid var(--border-strong); color: var(--text); font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; transition: background .12s, border-color .12s; }
   .icon-btn:hover { background: #2f2f2f; border-color: #4a4a4a; }
@@ -626,19 +678,6 @@
   .icon-btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
   .icon-btn.primary:hover { background: var(--red-hover); border-color: var(--red-hover); }
   .icon-btn.on { color: var(--warn); border-color: var(--warn); }
-
-  .env-manager { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-  .env-hint { font-size: 11px; color: var(--text-faint); line-height: 1.5; margin-bottom: 10px; }
-  .env-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-  .env-empty { font-size: 11px; color: var(--text-faint); font-style: italic; }
-  .env-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--radius); }
-  .env-item-name { font-size: 12px; font-weight: 600; color: var(--text); }
-  .env-item-url { font-size: 11px; color: var(--text-faint); margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
-  .env-del { background: transparent; border: none; color: var(--text-faint); cursor: pointer; font-size: 12px; padding: 2px 6px; border-radius: 4px; }
-  .env-del:hover { color: var(--error); background: var(--bg-raised); }
-  .env-add { display: flex; gap: 6px; flex-wrap: wrap; }
-  .env-add input.env-url { flex: 2 1 220px; }
-  .env-add input { flex: 1 1 140px; }
 
   select, .env-add input, .search input, .ai-row input {
     background: var(--bg-sunken); border: 1px solid var(--border-strong); color: var(--text);

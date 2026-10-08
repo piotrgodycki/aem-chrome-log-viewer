@@ -11,3 +11,18 @@ export interface AemEnv {
 export type LogLevel = "error" | "warn" | "info" | null;
 
 export type View = "tab" | "widget" | null;
+
+export interface Features {
+  widget: boolean;
+  envBadge: boolean;
+  dataLayer: boolean;
+  llm: boolean;
+}
+
+export const DEFAULT_FEATURES: Features = {
+  widget: true,
+  envBadge: true,
+  dataLayer: true,
+  llm: true,
+};
+

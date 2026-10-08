@@ -8,7 +8,8 @@
     analyzeWithGemini,
     analyzeWithOllama,
   } from "../../lib/llm";
-  import type { AemEnv, EnvType, LogLevel, Provider, View } from "../../lib/types";
+  import { DEFAULT_FEATURES } from "../../lib/types";
+  import type { AemEnv, EnvType, Features, LogLevel, Provider, View } from "../../lib/types";
 
   const view = new URLSearchParams(location.search).get("view") as View;
   const isFluid = view === "tab" || view === "widget";
@@ -33,6 +34,7 @@
   let environments = $state<AemEnv[]>([]);
   let activeEnv = $state("");
   let settingsOpen = $state(false);
+  let features = $state<Features>({ ...DEFAULT_FEATURES });
   let newEnvName = $state("");
   let newEnvType = $state<EnvType>("local");
   let newEnvUrl = $state("");
@@ -297,6 +299,7 @@
       redact,
       environments: $state.snapshot(environments),
       activeEnv,
+      features: $state.snapshot(features),
     });
   });
 
@@ -310,6 +313,7 @@
       "environments",
       "activeEnv",
       "externalConsent",
+      "features",
     ])) as Record<string, any>;
     if (cfg.aiProvider) provider = cfg.aiProvider;
     if (cfg.aiModel) model = cfg.aiModel;
@@ -318,6 +322,7 @@
     if (cfg.redact === false) redact = false;
     if (Array.isArray(cfg.environments)) environments = cfg.environments;
     if (cfg.activeEnv) activeEnv = cfg.activeEnv;
+    if (cfg.features) features = { ...DEFAULT_FEATURES, ...cfg.features };
     externalConsent = !!cfg.externalConsent;
     loaded = true;
     void refreshNow();
@@ -400,6 +405,12 @@
         <button class="icon-btn primary" onclick={addEnv}>Add</button>
       </div>
       <div class="env-hint">Label URLs so you always know what you're looking at. Nothing leaves this machine.</div>
+
+      <div class="settings-sep"></div>
+      <div class="settings-head2">Features</div>
+      <label class="feat"><input type="checkbox" bind:checked={features.widget} /> Floating widget on AEM pages</label>
+      <label class="feat"><input type="checkbox" bind:checked={features.envBadge} /> On-page environment badge (top-left)</label>
+      <label class="feat"><input type="checkbox" bind:checked={features.llm} /> LLM analysis</label>
     </div>
   {/if}
 
@@ -433,6 +444,7 @@
     </div>
   </div>
 
+  {#if features.llm}
   <div class="ai-row">
     <button class="icon-btn analyze" title="Analyze logs with an LLM" disabled={analyzing} onclick={runAnalyze}>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -480,6 +492,7 @@
       🔑 Uses <strong>your Anthropic account</strong>. The key is stored locally in this browser only and sent
       directly to api.anthropic.com. Only enable for data your account may process.
     </div>
+  {/if}
   {/if}
 
   {#if analysisOpen}
@@ -653,6 +666,10 @@
   .settings-head { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 800; letter-spacing: .4px; color: var(--text); padding: 2px 4px 10px; }
   .settings-head .icon-plain { font-size: 18px; line-height: 1; padding: 0 4px; }
   .settings-sub { font-weight: 500; color: var(--text-faint); }
+  .settings-sep { height: 1px; background: var(--border); margin: 12px 0 10px; }
+  .settings-head2 { font-size: 11px; font-weight: 800; letter-spacing: .4px; color: var(--text); padding: 0 4px 6px; }
+  .feat { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-dim); padding: 5px 6px; cursor: pointer; user-select: none; }
+  .feat input { margin: 0; accent-color: var(--red); cursor: pointer; }
   .env-opts { display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow-y: auto; }
   .env-opt { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: var(--radius); cursor: pointer; border: 1px solid transparent; }
   .env-opt:hover { background: var(--bg-sunken); }

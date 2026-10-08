@@ -109,6 +109,10 @@ export default defineContentScript({
             <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
             Log Viewer
           </button>
+          <button data-tool="datalayer">
+            <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+            Data Layer
+          </button>
           <button data-tool="edit">
             <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
             Edit page
@@ -123,7 +127,7 @@ export default defineContentScript({
           </button>
           <button data-tool="graphql">
             <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.4"/><circle cx="12" cy="4" r="1.8"/><circle cx="12" cy="20" r="1.8"/><circle cx="5" cy="8" r="1.8"/><circle cx="19" cy="8" r="1.8"/><circle cx="5" cy="16" r="1.8"/><circle cx="19" cy="16" r="1.8"/><path d="M12 6v12M6.5 9l11 6M17.5 9l-11 6"/></svg></span>
-            GraphiQL
+            GraphQL
           </button>
         </div>
         <button class="fab" id="fab" title="AEM tools" aria-label="AEM tools">
@@ -140,8 +144,12 @@ export default defineContentScript({
     const fabWrap = root.getElementById("fabWrap") as HTMLDivElement;
     const fabMenu = root.getElementById("fabMenu") as HTMLDivElement;
 
-    function openViewer() {
-      if (!frame.src) frame.src = panelUrl;
+    function openViewer(tab?: "datalayer") {
+      if (!frame.src) {
+        frame.src = panelUrl + (tab ? "&open=" + tab : "");
+      } else if (tab) {
+        frame.contentWindow?.postMessage({ type: "aem-show", tab }, selfOrigin);
+      }
       panel.classList.add("open");
     }
 
@@ -176,6 +184,7 @@ export default defineContentScript({
       b.addEventListener("click", () => {
         const tool = b.dataset.tool ?? "";
         if (tool === "viewer") openViewer();
+        else if (tool === "datalayer") openViewer("datalayer");
         else {
           const u = toolUrl(tool);
           if (u) window.open(u, "_blank", "noopener");
@@ -215,9 +224,13 @@ export default defineContentScript({
       if (!anyFab) fabMenu.classList.remove("open");
       const viewerBtn = fabMenu.querySelector('button[data-tool="viewer"]') as HTMLElement | null;
       if (viewerBtn) viewerBtn.style.display = features.widget ? "flex" : "none";
-      fabMenu.querySelectorAll<HTMLElement>('button:not([data-tool="viewer"])').forEach((b) => {
-        b.style.display = features.tools ? "flex" : "none";
-      });
+      const dlBtn = fabMenu.querySelector('button[data-tool="datalayer"]') as HTMLElement | null;
+      if (dlBtn) dlBtn.style.display = features.widget && features.dataLayer ? "flex" : "none";
+      fabMenu
+        .querySelectorAll<HTMLElement>('button[data-tool]:not([data-tool="viewer"]):not([data-tool="datalayer"])')
+        .forEach((b) => {
+          b.style.display = features.tools ? "flex" : "none";
+        });
       if (!features.widget) panel.classList.remove("open");
 
       const env = envs.find((e) => e.name === active);

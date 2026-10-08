@@ -331,6 +331,14 @@
     if (cfg.features) features = { ...DEFAULT_FEATURES, ...cfg.features };
     externalConsent = !!cfg.externalConsent;
     loaded = true;
+
+    // The widget can request a specific tab on open.
+    if (new URLSearchParams(location.search).get("open") === "datalayer") show.datalayer = true;
+    window.addEventListener("message", (e) => {
+      const d = e.data as { type?: string; tab?: string };
+      if (e.source === parent && d?.type === "aem-show" && d.tab === "datalayer") show.datalayer = true;
+    });
+
     void refreshNow();
   });
 </script>

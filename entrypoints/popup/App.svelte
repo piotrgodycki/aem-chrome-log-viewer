@@ -420,6 +420,7 @@
       <div class="settings-head2">Features</div>
       <label class="feat"><input type="checkbox" bind:checked={features.widget} /> Floating widget on AEM pages</label>
       <label class="feat"><input type="checkbox" bind:checked={features.envBadge} /> On-page environment badge (top-left)</label>
+      <label class="feat"><input type="checkbox" bind:checked={features.tools} /> AEM tools launcher (editor, CRXDE, DAM, GraphiQL)</label>
       <label class="feat"><input type="checkbox" bind:checked={features.dataLayer} /> Data Layer tab (ACDL + GTM)</label>
       <label class="feat"><input type="checkbox" bind:checked={features.llm} /> LLM analysis</label>
     </div>

@@ -25,6 +25,7 @@
 - **AEM-expert prompt** — triage tuned for OSGi, Sling, JCR/Oak, replication, dispatcher, queries, threads.
 - **Data Layer tab** — live stream of **Adobe Client Data Layer** (`adobeDataLayer`) and **GTM** (`dataLayer`) events plus the current page meta / state, captured from the page (source filter, search, expandable payloads).
 - **Floating widget** — a logo button in the bottom-right of AEM pages toggles a resizable viewer panel.
+- **AEM tools launcher** — a one-click menu on AEM pages to open the current page in the **editor**, plus **CRXDE Lite**, **Assets (DAM)** and **GraphiQL** on the author instance (publish :4503 → author :4502).
 - **On-page environment badge** — a color-coded badge injected top-left of AEM pages (next to "Adobe Experience Manager") so you never confuse instances.
 - **Resizable pop-out window** — break out of the fixed popup into a window you can drag-resize.
 - **Environment labels** — tag URLs as PROD / STAGE / DEV with a loud colored strip + badge (local-only safety net for tunnelled instances).

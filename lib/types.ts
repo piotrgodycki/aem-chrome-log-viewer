@@ -17,6 +17,7 @@ export interface Features {
   envBadge: boolean;
   dataLayer: boolean;
   llm: boolean;
+  tools: boolean;
 }
 
 export const DEFAULT_FEATURES: Features = {
@@ -24,5 +25,6 @@ export const DEFAULT_FEATURES: Features = {
   envBadge: true,
   dataLayer: true,
   llm: true,
+  tools: true,
 };
 

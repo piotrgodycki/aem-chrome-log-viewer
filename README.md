@@ -23,9 +23,12 @@
   - **Gemini Nano (built-in)** — Chrome's on-device Prompt API.
   - **Claude (your account)** — Anthropic API with your own key (stored locally).
 - **AEM-expert prompt** — triage tuned for OSGi, Sling, JCR/Oak, replication, dispatcher, queries, threads.
+- **Data Layer tab** — live stream of **Adobe Client Data Layer** (`adobeDataLayer`) and **GTM** (`dataLayer`) events plus the current page meta / state, captured from the page (source filter, search, expandable payloads).
 - **Floating widget** — a logo button in the bottom-right of AEM pages toggles a resizable viewer panel.
+- **On-page environment badge** — a color-coded badge injected top-left of AEM pages (next to "Adobe Experience Manager") so you never confuse instances.
 - **Resizable pop-out window** — break out of the fixed popup into a window you can drag-resize.
-- **Environment labels** — tag URLs as PROD / STAGE / DEV with a loud colored badge (local-only safety net for tunnelled instances).
+- **Environment labels** — tag URLs as PROD / STAGE / DEV with a loud colored strip + badge (local-only safety net for tunnelled instances).
+- **Feature toggles** — enable/disable the widget, on-page badge, Data Layer tab and LLM analysis from the settings (⚙) panel.
 
 ## 🔒 Security & privacy
 

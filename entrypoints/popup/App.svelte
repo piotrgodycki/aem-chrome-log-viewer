@@ -10,6 +10,7 @@
   } from "../../lib/llm";
   import { DEFAULT_FEATURES } from "../../lib/types";
   import type { AemEnv, EnvType, Features, LogLevel, Provider, View } from "../../lib/types";
+  import DataLayer from "./DataLayer.svelte";
 
   const view = new URLSearchParams(location.search).get("view") as View;
   const isFluid = view === "tab" || view === "widget";
@@ -17,6 +18,7 @@
   // ----- View state -----
   let currentTab = $state<AemEnvKey>("author");
   let splitView = $state(false);
+  let panel = $state<"logs" | "datalayer">("logs");
   let authorRaw = $state("");
   let publishRaw = $state("");
   let authorError = $state("");
@@ -51,6 +53,11 @@
   let aiErr = $state(false);
   let analyzing = $state(false);
   let externalConsent = false;
+
+  // If the Data Layer feature is turned off while viewing it, fall back to logs.
+  $effect(() => {
+    if (!features.dataLayer && panel === "datalayer") panel = "logs";
+  });
 
   const activeEnvs = $derived<AemEnvKey[]>(splitView ? ["author", "publish"] : [currentTab]);
   const activeEnvObj = $derived(environments.find((e) => e.name === activeEnv) ?? null);
@@ -121,7 +128,7 @@
   // Auto-refresh loop (restarts when the visible panes or pause state change).
   $effect(() => {
     const envs = activeEnvs;
-    if (paused) return;
+    if (paused || panel !== "logs") return;
     const id = setInterval(() => void refreshNow(), 5000);
     return () => clearInterval(id);
   });
@@ -143,6 +150,7 @@
   function selectTab(env: AemEnvKey) {
     currentTab = env;
     splitView = false;
+    panel = "logs";
     void refreshNow();
   }
   function toggleSplit() {
@@ -410,18 +418,25 @@
       <div class="settings-head2">Features</div>
       <label class="feat"><input type="checkbox" bind:checked={features.widget} /> Floating widget on AEM pages</label>
       <label class="feat"><input type="checkbox" bind:checked={features.envBadge} /> On-page environment badge (top-left)</label>
+      <label class="feat"><input type="checkbox" bind:checked={features.dataLayer} /> Data Layer tab (ACDL + GTM)</label>
       <label class="feat"><input type="checkbox" bind:checked={features.llm} /> LLM analysis</label>
     </div>
   {/if}
 
   <div class="tab-row">
     <div class="segmented" role="tablist">
-      <button class="seg" class:active={!splitView && currentTab === "author"} role="tab" onclick={() => selectTab("author")}>Author</button>
-      <button class="seg" class:active={!splitView && currentTab === "publish"} role="tab" onclick={() => selectTab("publish")}>Publish</button>
+      <button class="seg" class:active={panel === "logs" && !splitView && currentTab === "author"} role="tab" onclick={() => selectTab("author")}>Author</button>
+      <button class="seg" class:active={panel === "logs" && !splitView && currentTab === "publish"} role="tab" onclick={() => selectTab("publish")}>Publish</button>
+      {#if features.dataLayer}
+        <button class="seg" class:active={panel === "datalayer"} role="tab" onclick={() => (panel = "datalayer")}>Data Layer</button>
+      {/if}
     </div>
-    <button class="icon-btn" class:on={splitView} title="Show Author & Publish side by side" onclick={toggleSplit}>⿻ Split</button>
+    {#if panel === "logs"}
+      <button class="icon-btn" class:on={splitView} title="Show Author & Publish side by side" onclick={toggleSplit}>⿻ Split</button>
+    {/if}
   </div>
 
+  {#if panel === "logs"}
   <div class="toolbar">
     <div class="search">
       <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -545,6 +560,9 @@
       </div>
     {/if}
   </div>
+  {:else}
+    <DataLayer />
+  {/if}
 </main>
 
 <style>

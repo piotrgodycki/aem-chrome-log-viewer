@@ -1,0 +1,69 @@
+import {
+  DEFAULT_FEATURES,
+  type Features,
+} from "../lib/types";
+import {
+  DL_MSG,
+  DL_STORAGE_KEY,
+  type DLEvent,
+  type DLMessage,
+  type DLSnapshot,
+} from "../lib/datalayer";
+
+// Isolated world: receives data-layer messages from the MAIN world and mirrors
+// the latest snapshot into chrome.storage.local, which the viewer reads live.
+export default defineContentScript({
+  matches: ["http://localhost:4502/*", "http://localhost:4503/*"],
+  runAt: "document_start",
+  allFrames: true,
+  main() {
+    let enabled = true;
+    const check = async () => {
+      const cfg = (await browser.storage.local.get("features")) as { features?: Partial<Features> };
+      enabled = { ...DEFAULT_FEATURES, ...(cfg.features ?? {}) }.dataLayer;
+    };
+    void check();
+    browser.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.features) void check();
+    });
+
+    const events: DLEvent[] = [];
+    let acdlState: unknown = null;
+    let gtmState: unknown = null;
+    let href = location.href;
+    let seq = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const flush = () => {
+      timer = null;
+      const snap: DLSnapshot = {
+        events: events.slice(-200),
+        acdlState,
+        gtmState,
+        href,
+        updated: Date.now(),
+      };
+      browser.storage.local.set({ [DL_STORAGE_KEY]: snap });
+    };
+    const schedule = () => {
+      if (!timer) timer = setTimeout(flush, 200);
+    };
+
+    window.addEventListener("message", (e) => {
+      if (e.source !== window) return;
+      const d = e.data as DLMessage | undefined;
+      if (!d || d[DL_MSG] !== true) return;
+      if (!enabled) return;
+
+      href = d.href || href;
+      if (d.kind === "state") {
+        if (d.source === "acdl") acdlState = d.data;
+        else gtmState = d.data;
+      } else {
+        events.push({ id: ++seq, source: d.source, name: String(d.name || "event"), ts: d.ts || Date.now(), data: d.data });
+        if (events.length > 400) events.splice(0, events.length - 400);
+      }
+      schedule();
+    });
+  },
+});

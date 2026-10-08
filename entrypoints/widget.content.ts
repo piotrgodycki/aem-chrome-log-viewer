@@ -61,37 +61,29 @@ export default defineContentScript({
           0%, 100% { box-shadow: 0 2px 12px rgba(227,72,80,.4); }
           50% { box-shadow: 0 0 0 6px rgba(227,72,80,0), 0 2px 12px rgba(227,72,80,.4); }
         }
-        .tools-wrap { position: fixed; right: 84px; bottom: 20px; z-index: 2147483647; display: none; }
-        .tools-fab {
-          display: flex; align-items: center; justify-content: center;
-          width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: none; padding: 0;
-          background: #378ef0; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.4);
-          transition: transform .12s ease, box-shadow .12s ease;
-        }
-        .tools-fab:hover { transform: scale(1.08); box-shadow: 0 6px 22px rgba(0,0,0,.5); }
-        .tools-menu {
-          position: absolute; right: 0; bottom: 56px; min-width: 196px;
+        .fab-wrap { position: fixed; right: 20px; bottom: 20px; z-index: 2147483647; display: none; }
+        .fab-menu {
+          position: absolute; right: 0; bottom: 62px; min-width: 200px;
           background: #252525; border: 1px solid #3f3f3f; border-radius: 10px;
           box-shadow: 0 16px 48px rgba(0,0,0,.55); padding: 6px; display: none; flex-direction: column; gap: 2px;
         }
-        .tools-menu.open { display: flex; }
-        .tools-menu button {
+        .fab-menu.open { display: flex; }
+        .fab-menu button {
           display: flex; align-items: center; gap: 11px; width: 100%;
           background: transparent; border: none; cursor: pointer; text-align: left; color: #e8e8e8;
           font: 600 12.5px/1 "adobe-clean", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           padding: 9px 10px; border-radius: 6px;
         }
-        .tools-menu button:hover { background: #161616; }
-        .tools-menu button[disabled] { opacity: .4; cursor: default; }
-        .tools-menu button[disabled]:hover { background: transparent; }
-        .tools-menu .ico { display: flex; color: #adadad; flex-shrink: 0; }
-        .tools-menu button:hover .ico { color: #fff; }
+        .fab-menu button:hover { background: #161616; }
+        .fab-menu button[disabled] { opacity: .4; cursor: default; }
+        .fab-menu button[disabled]:hover { background: transparent; }
+        .fab-menu .ico { display: flex; color: #adadad; flex-shrink: 0; }
+        .fab-menu button:hover .ico { color: #fff; }
         .fab {
-          position: fixed; right: 20px; bottom: 20px;
           width: 52px; height: 52px; border-radius: 50%;
-          cursor: pointer; border: none; padding: 0; overflow: hidden; display: none;
+          cursor: pointer; border: none; padding: 0; overflow: hidden; display: block;
           background: #1d1d1d; box-shadow: 0 4px 16px rgba(0,0,0,.45);
-          z-index: 2147483647; transition: transform .12s ease, box-shadow .12s ease;
+          transition: transform .12s ease, box-shadow .12s ease;
         }
         .fab:hover { transform: scale(1.07); box-shadow: 0 6px 22px rgba(0,0,0,.55); }
         .fab img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -110,8 +102,13 @@ export default defineContentScript({
         .panel iframe { width: 100%; height: 100%; border: none; display: block; background: #1d1d1d; }
       </style>
       <div class="env-badge" id="envBadge"><span class="d"></span><span id="envText"></span></div>
-      <div class="tools-wrap" id="toolsWrap">
-        <div class="tools-menu" id="toolsMenu">
+      <div class="panel" id="panel"><iframe id="frame" title="AEM Log Viewer"></iframe></div>
+      <div class="fab-wrap" id="fabWrap">
+        <div class="fab-menu" id="fabMenu">
+          <button data-tool="viewer">
+            <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+            Log Viewer
+          </button>
           <button data-tool="edit">
             <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
             Edit page
@@ -129,14 +126,10 @@ export default defineContentScript({
             GraphiQL
           </button>
         </div>
-        <button class="tools-fab" id="toolsFab" title="AEM tools" aria-label="AEM tools">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <button class="fab" id="fab" title="AEM tools" aria-label="AEM tools">
+          <img src="${logoUrl}" alt="AEM Log Viewer">
         </button>
       </div>
-      <div class="panel" id="panel"><iframe id="frame" title="AEM Log Viewer"></iframe></div>
-      <button class="fab" id="fab" title="AEM Log Viewer" aria-label="Toggle AEM Log Viewer">
-        <img src="${logoUrl}" alt="AEM Log Viewer">
-      </button>
     `;
 
     const fab = root.getElementById("fab") as HTMLButtonElement;
@@ -144,15 +137,13 @@ export default defineContentScript({
     const frame = root.getElementById("frame") as HTMLIFrameElement;
     const envBadge = root.getElementById("envBadge") as HTMLDivElement;
     const envText = root.getElementById("envText") as HTMLSpanElement;
-    const toolsWrap = root.getElementById("toolsWrap") as HTMLDivElement;
-    const toolsFab = root.getElementById("toolsFab") as HTMLButtonElement;
-    const toolsMenu = root.getElementById("toolsMenu") as HTMLDivElement;
+    const fabWrap = root.getElementById("fabWrap") as HTMLDivElement;
+    const fabMenu = root.getElementById("fabMenu") as HTMLDivElement;
 
-    fab.addEventListener("click", () => {
-      const open = panel.classList.toggle("open");
-      fab.classList.toggle("active", open);
-      if (open && !frame.src) frame.src = panelUrl;
-    });
+    function openViewer() {
+      if (!frame.src) frame.src = panelUrl;
+      panel.classList.add("open");
+    }
 
     // Author base for console tools (publish :4503 → author :4502).
     const authorBase = () => location.origin.replace(/:4503\b/, ":4502");
@@ -175,20 +166,24 @@ export default defineContentScript({
       }
     }
 
-    toolsFab.addEventListener("click", (e) => {
+    fab.addEventListener("click", (e) => {
       e.stopPropagation();
-      const editBtn = toolsMenu.querySelector('button[data-tool="edit"]') as HTMLButtonElement | null;
+      const editBtn = fabMenu.querySelector('button[data-tool="edit"]') as HTMLButtonElement | null;
       if (editBtn) editBtn.disabled = editorUrl() === null;
-      toolsMenu.classList.toggle("open");
+      fabMenu.classList.toggle("open");
     });
-    toolsMenu.querySelectorAll<HTMLButtonElement>("button").forEach((b) => {
+    fabMenu.querySelectorAll<HTMLButtonElement>("button").forEach((b) => {
       b.addEventListener("click", () => {
-        const u = toolUrl(b.dataset.tool ?? "");
-        if (u) window.open(u, "_blank", "noopener");
-        toolsMenu.classList.remove("open");
+        const tool = b.dataset.tool ?? "";
+        if (tool === "viewer") openViewer();
+        else {
+          const u = toolUrl(tool);
+          if (u) window.open(u, "_blank", "noopener");
+        }
+        fabMenu.classList.remove("open");
       });
     });
-    window.addEventListener("click", () => toolsMenu.classList.remove("open"));
+    window.addEventListener("click", () => fabMenu.classList.remove("open"));
 
     const selfOrigin = new URL(browser.runtime.getURL("/")).origin;
     window.addEventListener("message", (e) => {
@@ -215,14 +210,15 @@ export default defineContentScript({
         : [];
       const active: string = cfg.activeEnv ?? "";
 
-      fab.style.display = features.widget ? "block" : "none";
-      if (!features.widget) {
-        panel.classList.remove("open");
-        fab.classList.remove("active");
-      }
-
-      toolsWrap.style.display = features.tools ? "block" : "none";
-      if (!features.tools) toolsMenu.classList.remove("open");
+      const anyFab = features.widget || features.tools;
+      fabWrap.style.display = anyFab ? "block" : "none";
+      if (!anyFab) fabMenu.classList.remove("open");
+      const viewerBtn = fabMenu.querySelector('button[data-tool="viewer"]') as HTMLElement | null;
+      if (viewerBtn) viewerBtn.style.display = features.widget ? "flex" : "none";
+      fabMenu.querySelectorAll<HTMLElement>('button:not([data-tool="viewer"])').forEach((b) => {
+        b.style.display = features.tools ? "flex" : "none";
+      });
+      if (!features.widget) panel.classList.remove("open");
 
       const env = envs.find((e) => e.name === active);
       if (features.envBadge && env) {

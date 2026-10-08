@@ -6,14 +6,16 @@
   let source = $state<"all" | "acdl" | "gtm">("all");
   let query = $state("");
   let metaOpen = $state(true);
+  let order = $state<"desc" | "asc">("desc");
 
-  const events = $derived(
-    (snap?.events ?? [])
+  // Events are stored in capture order (oldest → newest); #id is the absolute
+  // sequence so the order is unambiguous regardless of sort direction.
+  const events = $derived.by(() => {
+    const list = (snap?.events ?? [])
       .filter((e) => source === "all" || e.source === source)
-      .filter((e) => !query || e.name.toLowerCase().includes(query.toLowerCase()))
-      .slice()
-      .reverse(),
-  );
+      .filter((e) => !query || e.name.toLowerCase().includes(query.toLowerCase()));
+    return order === "desc" ? list.slice().reverse() : list.slice();
+  });
 
   // Prefer the AEM page meta if present, else the whole state.
   const pageMeta = $derived.by(() => {
@@ -88,6 +90,9 @@
       </div>
       <input class="dl-search" placeholder="Filter events…" bind:value={query} />
       <span class="dl-count">{events.length}</span>
+      <button class="dl-clear" title="Toggle sort order" onclick={() => (order = order === "desc" ? "asc" : "desc")}>
+        {order === "desc" ? "Newest ↓" : "Oldest ↑"}
+      </button>
       <button class="dl-clear" onclick={clearEvents}>Clear</button>
     </div>
 
@@ -98,6 +103,7 @@
         {#each events as ev (ev.id)}
           <details class="dl-event">
             <summary>
+              <span class="seq">#{ev.id}</span>
               <span class="src {ev.source}">{ev.source.toUpperCase()}</span>
               <span class="name">{ev.name}</span>
               <span class="ts">{time(ev.ts)}</span>
@@ -141,6 +147,7 @@
   .dl-event { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 6px; }
   .dl-event summary { display: flex; align-items: center; gap: 9px; padding: 7px 10px; cursor: pointer; list-style: none; font-size: 12px; }
   .dl-event summary::-webkit-details-marker { display: none; }
+  .seq { font-family: var(--mono); font-size: 10px; color: var(--text-faint); min-width: 30px; }
   .src { font-size: 9px; font-weight: 800; letter-spacing: .4px; padding: 2px 6px; border-radius: 4px; }
   .src.acdl { background: rgba(227,72,80,.18); color: #ff8085; }
   .src.gtm { background: rgba(55,142,240,.18); color: #9cc4f5; }

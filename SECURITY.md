@@ -76,6 +76,7 @@ to an LLM for triage. It is primarily a **developer tool for localhost instances
 | 4 | Low | Broad `host_permissions` for `http://localhost/*` / `127.0.0.1/*` (needed for arbitrary AEM/Ollama ports). | **Accepted** — localhost only; content-script injection is still limited to `:4502/:4503`. |
 | 5 | Low | Redaction is regex-based best-effort; client identifiers not matching a path/URL/e-mail pattern may pass through. | **Residual** — documented; prefer Ollama (local) for confidential data; Gemini always redacts. |
 | 6 | Info | LLM output is model-controlled; a jailbroken model could emit misleading triage. | **Residual** — output is analysis-only, rendered as inert text; no tool execution. |
+| 7 | Low | The Data Layer capture content script runs on all `http(s)` pages (to read ACDL/GTM anywhere). | **Accepted** — read-only observation; captured data stays in local extension storage and is never transmitted; disable via the Data Layer feature toggle. |
 
 ---
 

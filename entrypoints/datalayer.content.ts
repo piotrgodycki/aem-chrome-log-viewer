@@ -13,7 +13,7 @@ import {
 // Isolated world: receives data-layer messages from the MAIN world and mirrors
 // the latest snapshot into chrome.storage.local, which the viewer reads live.
 export default defineContentScript({
-  matches: ["http://localhost:4502/*", "http://localhost:4503/*"],
+  matches: ["http://*/*", "https://*/*"],
   runAt: "document_start",
   allFrames: true,
   main() {

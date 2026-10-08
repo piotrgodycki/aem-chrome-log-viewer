@@ -16,9 +16,8 @@
   const isFluid = view === "tab" || view === "widget";
 
   // ----- View state -----
-  let currentTab = $state<AemEnvKey>("author");
-  let splitView = $state(false);
-  let panel = $state<"logs" | "datalayer">("logs");
+  // Independent toggles — nothing is shown until the user picks something.
+  let show = $state({ author: false, publish: false, datalayer: false });
   let authorRaw = $state("");
   let publishRaw = $state("");
   let authorError = $state("");
@@ -54,12 +53,17 @@
   let analyzing = $state(false);
   let externalConsent = false;
 
-  // If the Data Layer feature is turned off while viewing it, fall back to logs.
+  // If the Data Layer feature is turned off while shown, hide it.
   $effect(() => {
-    if (!features.dataLayer && panel === "datalayer") panel = "logs";
+    if (!features.dataLayer && show.datalayer) show.datalayer = false;
   });
 
-  const activeEnvs = $derived<AemEnvKey[]>(splitView ? ["author", "publish"] : [currentTab]);
+  const activeEnvs = $derived<AemEnvKey[]>(
+    [show.author ? "author" : null, show.publish ? "publish" : null].filter(
+      (x): x is AemEnvKey => x !== null,
+    ),
+  );
+  const showLogs = $derived(show.author || show.publish);
   const activeEnvObj = $derived(environments.find((e) => e.name === activeEnv) ?? null);
 
   interface Seg { text: string; mark: boolean; }
@@ -128,7 +132,7 @@
   // Auto-refresh loop (restarts when the visible panes or pause state change).
   $effect(() => {
     const envs = activeEnvs;
-    if (paused || panel !== "logs") return;
+    if (paused || envs.length === 0) return;
     const id = setInterval(() => void refreshNow(), 5000);
     return () => clearInterval(id);
   });
@@ -147,15 +151,9 @@
   }
 
   // ----- Tabs / split -----
-  function selectTab(env: AemEnvKey) {
-    currentTab = env;
-    splitView = false;
-    panel = "logs";
-    void refreshNow();
-  }
-  function toggleSplit() {
-    splitView = !splitView;
-    void refreshNow();
+  // When a log pane is switched on, load it immediately.
+  function onToggle(env: AemEnvKey) {
+    if (show[env]) void loadEnv(env);
   }
 
   // ----- Copy / export / clear -----
@@ -175,7 +173,7 @@
     setTimeout(() => (copied = false), 1200);
   }
   function exportLogs() {
-    const name = splitView ? "compare" : currentTab;
+    const name = activeEnvs.length === 2 ? "compare" : (activeEnvs[0] ?? "logs");
     const blob = new Blob([visibleText()], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -346,14 +344,17 @@
     </div>
   {/if}
   <header class="header">
-    <img class="logo" src="/logo.png" alt="AEM Logo" />
-    <div class="title-group">
-      <h1>AEM Log Viewer</h1>
-      <span class="subtitle">Author &amp; Publish error logs</span>
+    <div class="brand">
+      <img class="logo" src="/logo.png" alt="AEM Logo" />
+      <div class="title-group">
+        <h1>AEM Log Viewer</h1>
+        <span class="subtitle">Author &amp; Publish error logs</span>
+      </div>
     </div>
+    <div class="header-actions">
     <div class="live" class:paused>
       <span class="dot"></span>
-      <span>{paused ? "Paused" : "Live"}</span>
+      <span class="live-text">{paused ? "Paused" : "Live"}</span>
     </div>
     <button class="icon-plain" class:on={settingsOpen} title="Settings & environments" aria-label="Settings"
       onclick={() => (settingsOpen = !settingsOpen)}>
@@ -373,6 +374,7 @@
       </button>
     {/if}
     <button class="icon-plain close" aria-label="Close" onclick={closeViewer}>&times;</button>
+    </div>
   </header>
 
   {#if settingsOpen}
@@ -424,19 +426,29 @@
   {/if}
 
   <div class="tab-row">
-    <div class="segmented" role="tablist">
-      <button class="seg" class:active={panel === "logs" && !splitView && currentTab === "author"} role="tab" onclick={() => selectTab("author")}>Author</button>
-      <button class="seg" class:active={panel === "logs" && !splitView && currentTab === "publish"} role="tab" onclick={() => selectTab("publish")}>Publish</button>
+    <div class="toggles">
+      <label class="toggle" class:on={show.author}>
+        <input type="checkbox" bind:checked={show.author} onchange={() => onToggle("author")} />
+        Author <span class="port">:4502</span>
+      </label>
+      <label class="toggle" class:on={show.publish}>
+        <input type="checkbox" bind:checked={show.publish} onchange={() => onToggle("publish")} />
+        Publish <span class="port">:4503</span>
+      </label>
       {#if features.dataLayer}
-        <button class="seg" class:active={panel === "datalayer"} role="tab" onclick={() => (panel = "datalayer")}>Data Layer</button>
+        <label class="toggle" class:on={show.datalayer}>
+          <input type="checkbox" bind:checked={show.datalayer} />
+          Data Layer
+        </label>
       {/if}
     </div>
-    {#if panel === "logs"}
-      <button class="icon-btn" class:on={splitView} title="Show Author & Publish side by side" onclick={toggleSplit}>⿻ Split</button>
-    {/if}
   </div>
 
-  {#if panel === "logs"}
+  {#if !show.author && !show.publish && !show.datalayer}
+    <div class="pick-hint">Select <strong>Author</strong>, <strong>Publish</strong> or <strong>Data Layer</strong> above to begin.</div>
+  {/if}
+
+  {#if showLogs}
   <div class="toolbar">
     <div class="search">
       <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -560,14 +572,17 @@
       </div>
     {/if}
   </div>
-  {:else}
+  {/if}
+
+  {#if show.datalayer}
     <DataLayer />
   {/if}
 </main>
 
 <style>
   :global(html, body) { margin: 0; }
-  :global(body) { background: #1d1d1d; width: 820px; max-width: 100vw; }
+  /* Fixed intrinsic width so the toolbar popup opens wide (Chrome caps at 800). */
+  :global(body) { background: #1d1d1d; width: 780px; }
   :global(body:has(.app.fluid)) { width: 100%; }
 
   .app {
@@ -612,18 +627,25 @@
   @container (max-width: 640px) {
     .app.fluid .log-container { flex-direction: column; }
   }
+  @container (max-width: 460px) {
+    .subtitle { display: none; }
+    .live-text { display: none; }
+    .live { padding: 4px 7px; }
+  }
 
   .header {
-    display: flex; align-items: center; gap: 12px;
+    display: flex; align-items: center; gap: 10px 12px; flex-wrap: wrap;
     padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border);
   }
-  .logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; box-shadow: 0 0 0 1px var(--border-strong); }
-  .title-group { display: flex; flex-direction: column; line-height: 1.2; }
-  h1 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.2px; color: #fff; }
-  .subtitle { font-size: 11px; color: var(--text-faint); }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 auto; }
+  .header-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; }
+  .logo { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; box-shadow: 0 0 0 1px var(--border-strong); flex-shrink: 0; }
+  .title-group { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+  h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -0.2px; color: #fff; white-space: nowrap; }
+  .subtitle { font-size: 11px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .live {
-    margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim);
+    display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim);
     padding: 4px 9px; background: var(--bg-raised); border: 1px solid var(--border); border-radius: 999px;
   }
   .live .dot { width: 7px; height: 7px; border-radius: 50%; background: #3fcf6e; animation: pulse 2s infinite; }
@@ -661,10 +683,14 @@
   .app.fluid .env-strip { margin-top: -14px; }
 
   .tab-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .segmented { display: inline-flex; background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--radius); padding: 3px; }
-  .seg { background: transparent; border: none; color: var(--text-dim); font-size: 13px; font-weight: 600; padding: 6px 18px; border-radius: 4px; cursor: pointer; transition: background .12s, color .12s; }
-  .seg:hover { color: var(--text); }
-  .seg.active { background: var(--red); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+  .toggle { display: inline-flex; align-items: center; gap: 7px; background: var(--bg-sunken); border: 1px solid var(--border-strong); color: var(--text-dim); font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: var(--radius); cursor: pointer; user-select: none; transition: background .12s, color .12s, border-color .12s; }
+  .toggle:hover { color: var(--text); }
+  .toggle input { margin: 0; cursor: pointer; accent-color: var(--red); }
+  .toggle.on { color: #fff; border-color: var(--red); background: rgba(227,72,80,.14); }
+  .toggle .port { color: var(--text-faint); font-weight: 500; }
+  .pick-hint { color: var(--text-faint); font-size: 12px; padding: 16px; background: var(--bg-raised); border: 1px dashed var(--border-strong); border-radius: 8px; margin-bottom: 12px; }
+  .pick-hint strong { color: var(--text); }
 
   .icon-plain.on { color: var(--accent); background: var(--bg-raised); }
 

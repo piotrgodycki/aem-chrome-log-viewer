@@ -4,7 +4,7 @@ import { DL_MSG, type DLMessage } from "../lib/datalayer";
 // window.adobeDataLayer / window.dataLayer. It hooks both and relays events +
 // state to the isolated relay via window.postMessage.
 export default defineContentScript({
-  matches: ["http://localhost:4502/*", "http://localhost:4503/*"],
+  matches: ["http://*/*", "https://*/*"],
   runAt: "document_start",
   allFrames: true,
   world: "MAIN",

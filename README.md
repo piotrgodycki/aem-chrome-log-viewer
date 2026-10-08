@@ -118,9 +118,11 @@ fetched from `:4502` (Author) and `:4503` (Publish).
 
 ## 🔑 Permissions
 
-- `storage` — save preferences (engine, model, key, environments).
+- `storage` — save preferences (engine, model, key, environments, feature flags).
 - `host_permissions` — `http://localhost/*`, `http://127.0.0.1/*` (fetch logs / Ollama), `https://api.anthropic.com/*` (Claude).
-- Content script on `localhost:4502` / `:4503` — the floating widget.
+- Content scripts:
+  - Widget + on-page env badge — `localhost:4502` / `:4503` only.
+  - Data Layer capture — all `http(s)` pages (so you can inspect ACDL/GTM on any site); captures locally and writes to extension storage only.
 
 ## 🐛 Known limitations
 

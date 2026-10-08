@@ -3,19 +3,38 @@
   "name": "AEM Error Log Viewer",
   "version": "1.0",
   "description": "View and compare AEM Author and Publish error.logs in your browser",
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage"],
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "logo.png"
+    "default_icon": {
+      "16": "logo.png",
+      "32": "logo.png",
+      "48": "logo.png",
+      "128": "logo.png"
+    }
   },
-  "background": {
-    "service_worker": "background.js"
+  "icons": {
+    "16": "logo.png",
+    "32": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
   },
-  "host_permissions": ["https://localhost:4502/*", "http://localhost:4503/*"],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "https://api.anthropic.com/*"
+  ],
   "content_scripts": [
     {
       "matches": ["http://localhost:4502/*", "http://localhost:4503/*"],
-      "js": ["content.js"]
+      "js": ["widget.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "logo.png", "styles.css", "popup.js"],
+      "matches": ["http://localhost:4502/*", "http://localhost:4503/*"]
     }
   ]
 }

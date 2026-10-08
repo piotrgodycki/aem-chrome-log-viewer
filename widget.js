@@ -1,0 +1,71 @@
+// Floating AEM Log Viewer widget: a logo button in the bottom-right corner of
+// AEM pages. Clicking it toggles a resizable panel that hosts the full viewer
+// (popup.html) in an iframe — so fetches run in the extension context.
+(function () {
+  if (window.__aemLogViewerWidget) return;
+  window.__aemLogViewerWidget = true;
+
+  const host = document.createElement("div");
+  host.id = "aem-logviewer-widget-host";
+  // Keep the host itself out of the page's layout/CSS reach.
+  host.style.cssText = "all: initial;";
+  (document.documentElement || document.body).appendChild(host);
+  const root = host.attachShadow({ mode: "open" });
+
+  const logoUrl = chrome.runtime.getURL("logo.png");
+  const panelUrl = chrome.runtime.getURL("popup.html?view=widget");
+
+  root.innerHTML = `
+    <style>
+      :host { all: initial; }
+      .fab {
+        position: fixed; right: 20px; bottom: 20px;
+        width: 52px; height: 52px; border-radius: 50%;
+        cursor: pointer; border: none; padding: 0; overflow: hidden;
+        background: #1d1d1d; box-shadow: 0 4px 16px rgba(0,0,0,.45);
+        z-index: 2147483647; transition: transform .12s ease, box-shadow .12s ease;
+      }
+      .fab:hover { transform: scale(1.07); box-shadow: 0 6px 22px rgba(0,0,0,.55); }
+      .fab img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .fab.active { outline: 2px solid #e34850; outline-offset: 2px; }
+
+      .panel {
+        position: fixed; right: 20px; bottom: 84px;
+        width: 880px; height: 640px;
+        max-width: calc(100vw - 40px); max-height: calc(100vh - 110px);
+        min-width: 440px; min-height: 340px;
+        resize: both; overflow: hidden;
+        border-radius: 12px; background: #1d1d1d;
+        box-shadow: 0 16px 56px rgba(0,0,0,.55);
+        z-index: 2147483646; display: none;
+      }
+      .panel.open { display: block; }
+      .panel iframe { width: 100%; height: 100%; border: none; display: block; background: #1d1d1d; }
+    </style>
+    <div class="panel" id="panel"><iframe id="frame" title="AEM Log Viewer"></iframe></div>
+    <button class="fab" id="fab" title="AEM Log Viewer" aria-label="Toggle AEM Log Viewer">
+      <img src="${logoUrl}" alt="AEM Log Viewer">
+    </button>
+  `;
+
+  const fab = root.getElementById("fab");
+  const panel = root.getElementById("panel");
+  const frame = root.getElementById("frame");
+
+  fab.addEventListener("click", () => {
+    const open = panel.classList.toggle("open");
+    fab.classList.toggle("active", open);
+    if (open && !frame.src) frame.src = panelUrl; // lazy-load on first open
+  });
+
+  // The viewer's close button (inside the iframe) asks us to hide the panel.
+  // Only trust messages from our own iframe (extension origin).
+  const selfOrigin = new URL(chrome.runtime.getURL("")).origin;
+  window.addEventListener("message", (e) => {
+    if (e.origin !== selfOrigin || e.source !== frame.contentWindow) return;
+    if (e.data && e.data.type === "aem-widget-close") {
+      panel.classList.remove("open");
+      fab.classList.remove("active");
+    }
+  });
+})();
